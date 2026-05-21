@@ -11,7 +11,23 @@
       "Bash(cat)",
       "Bash(npm root *)",
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\heyxi\\\\Downloads\\\\hackathon-biopark\" -Recurse -Directory)",
-      "Bash(Select-Object FullName)"
+      "Bash(Select-Object FullName)",
+      "Skill(update-config)",
+      "PowerShell(python -c \"import json; f=open\\(r'C:\\\\Users\\\\arthu\\\\Desktop\\\\hackathon-biopark\\\\.claude\\\\settings.local.json', encoding='utf-8'\\); json.load\\(f\\); print\\('JSON valido'\\)\")"
+    ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "Verifique o que mudou nesta sessão com 'git diff HEAD' e 'git status'. Se houve alterações relevantes (novos endpoints, mudanças de estrutura, novas features, configurações novas), atualize o README.md para refletir o estado atual do projeto. Preserve seções que continuam corretas. Não faça nada se não houve mudanças significativas.",
+            "timeout": 90,
+            "statusMessage": "Atualizando README.md..."
+          }
+        ]
+      }
     ]
   }
 }

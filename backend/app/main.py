@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import auth, protocols, import_data, scraping, reports
+from app.routers import auth, protocols, import_data, scraping, reports, ask
 
 app = FastAPI(title="Biopark - Protocolos", version="1.0.0")
 
@@ -18,6 +18,7 @@ app.include_router(protocols.router)
 app.include_router(import_data.router)
 app.include_router(scraping.router)
 app.include_router(reports.router)
+app.include_router(ask.router)
 
 
 @app.get("/health")

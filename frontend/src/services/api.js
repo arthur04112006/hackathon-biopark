@@ -55,6 +55,10 @@ export const confirmImport = (rows) =>
 export const runAllQueries = () => api.post('/scraping/run-all').then((r) => r.data)
 export const runSingleQuery = (id) => api.post(`/scraping/run/${id}`).then((r) => r.data)
 
+// Ask AI
+export const askQuestion = (question) =>
+  api.post('/ask/', { question }).then((r) => r.data)
+
 // Reports
 export const getDashboardData = (params) => api.get('/reports/dashboard-data', { params }).then((r) => r.data)
 export const downloadPdf = () =>

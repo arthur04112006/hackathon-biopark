@@ -4,12 +4,13 @@ import {
   getDashboardData, downloadPdf, runAllQueries,
   getProtocols, createProtocol, updateProtocol, deleteProtocol,
   bulkDeleteProtocols, runSingleQuery, previewSpreadsheet, confirmImport,
+  askQuestion,
 } from '../services/api'
 import { useNavigate } from 'react-router-dom'
 import {
   FileText, RefreshCw, LogOut, AlertTriangle, BarChart3,
   Plus, Upload, Search, X, Pencil, Trash2, Bell, Command,
-  ChevronDown, MoreHorizontal,
+  ChevronDown, MoreHorizontal, Sparkles, SendHorizonal,
 } from 'lucide-react'
 
 const STATUS_CONFIG = [
@@ -57,6 +58,12 @@ export default function Dashboard() {
   const [selected,        setSelected]        = useState(new Set())
   const [showBulkConfirm, setShowBulkConfirm] = useState(false)
   const [queryResult,     setQueryResult]     = useState(null)
+
+  /* ─── AI ask ─── */
+  const [aiQuestion, setAiQuestion] = useState('')
+  const [aiAnswer,   setAiAnswer]   = useState(null)
+  const [aiLoading,  setAiLoading]  = useState(false)
+  const [aiError,    setAiError]    = useState(null)
 
   /* ─── queries ─── */
   const { data: dashData, refetch: refetchDash } = useQuery({
@@ -199,6 +206,20 @@ export default function Dashboard() {
   }
   function clearFilters() { setSearchQuery(''); setFilterOrgao(''); setFilterStatus(''); setFilterProject('') }
 
+  async function handleAskQuestion(e) {
+    e?.preventDefault()
+    if (!aiQuestion.trim() || aiLoading) return
+    setAiLoading(true); setAiError(null); setAiAnswer(null)
+    try {
+      const res = await askQuestion(aiQuestion.trim())
+      setAiAnswer(res.answer)
+    } catch (err) {
+      setAiError(err.response?.data?.detail || 'Erro ao consultar IA')
+    } finally {
+      setAiLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-paper text-ink">
 
@@ -304,6 +325,46 @@ export default function Dashboard() {
             <MiniKpi label="Mudanças hoje" value={mudancasHoje}   sub="novas atualizações" tone="lime" />
             <MiniKpi label="Pendências"    value={statusCounts['PENDENTE'] ?? 0} sub="aguardando ação" tone="amber" />
           </div>
+        </div>
+
+        {/* ═══ AI Ask ═══ */}
+        <div className="rounded-2xl p-5 mb-4 bg-surface border border-line">
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles size={14} className="text-ink" />
+            <span className="font-mono text-[11px] uppercase tracking-wider text-muted">Perguntas inteligentes</span>
+          </div>
+          <form onSubmit={handleAskQuestion} className="flex gap-2">
+            <input
+              value={aiQuestion}
+              onChange={e => setAiQuestion(e.target.value)}
+              placeholder="Ex: Quantos protocolos estão pendentes? Quais projetos têm mais aprovações?"
+              className="flex-1 bg-paper border border-line-2 rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ink/10 focus:border-ink/30 transition"
+              disabled={aiLoading}
+            />
+            <button
+              type="submit"
+              disabled={!aiQuestion.trim() || aiLoading}
+              className="px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-1.5 bg-ink text-lime hover:bg-ink-2 disabled:opacity-40 transition shrink-0"
+            >
+              {aiLoading
+                ? <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg>
+                : <SendHorizonal size={14} />}
+              {aiLoading ? 'Consultando…' : 'Perguntar'}
+            </button>
+          </form>
+
+          {aiError && (
+            <div className="mt-3 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm flex items-center justify-between">
+              <span>{aiError}</span>
+              <button onClick={() => setAiError(null)} className="ml-3 text-red-400 hover:text-red-600"><X size={13} /></button>
+            </div>
+          )}
+
+          {aiAnswer && (
+            <div className="mt-3 bg-paper border border-line rounded-xl px-4 py-3 text-sm text-ink whitespace-pre-wrap leading-relaxed">
+              {aiAnswer}
+            </div>
+          )}
         </div>
 
         {/* ═══ Status segmented row ═══ */}
